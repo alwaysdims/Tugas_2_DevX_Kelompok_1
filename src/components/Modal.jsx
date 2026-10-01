@@ -9,10 +9,12 @@ export default function Modal({ item, onClose }) {
     }
     window.addEventListener('keydown', handleKeyDown)
     document.body.style.overflow = 'hidden'
+    if (window.lenis) window.lenis.stop()
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
       document.body.style.overflow = ''
+      if (window.lenis) window.lenis.start()
     }
   }, [onClose])
 

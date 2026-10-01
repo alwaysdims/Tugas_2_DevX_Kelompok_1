@@ -1,366 +1,466 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
-import { members } from '../data/members'
 import About3D from './About3D'
+import LightRays from './LightRays'
+import Lanyard from './Lanyard'
 
-const MOVIE_WORDS = ['ORANG', 'DI', 'BALIK', 'INI']
+function easeInOutCubic(x) {
+  return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2
+}
+function easeOutCubic(x) {
+  return 1 - Math.pow(1 - x, 3)
+}
 
-// ponytail: 3-slide cinematic presentation with word-by-word movie lock. upgrade when multi-chapter horizontal scroll needed.
-export default function About({ darkMode, show3DByDefault = false }) {
-  const [currentSlide, setCurrentSlide] = useState(0)
-  const [introCompleted, setIntroCompleted] = useState(false)
-  const [visibleWordsCount, setVisibleWordsCount] = useState(0)
+export default function About({ darkMode = true, show3DByDefault = false }) {
   const [show3DModal, setShow3DModal] = useState(show3DByDefault)
-  const slideContainerRef = useRef(null)
-  const isScrollingRef = useRef(false)
 
-  // Word-by-word cinematic movie title sequence
+  const sectionRef = useRef(null)
+  const stageIntroRef = useRef(null)
+  const slideLutfiRef = useRef(null)
+  const slideDimasRef = useRef(null)
+  const morphText1Ref = useRef(null)
+  const morphText2Ref = useRef(null)
+
+  // ── 1. MagicUI Morphing Text Engine ──
   useEffect(() => {
-    let wordTimer
-    const animateNextWord = (index) => {
-      if (index <= MOVIE_WORDS.length) {
-        setVisibleWordsCount(index)
-        if (index < MOVIE_WORDS.length) {
-          wordTimer = setTimeout(() => {
-            animateNextWord(index + 1)
-          }, 550) // 550ms cinematic cadence
+    const texts = ['', 'ORANG', 'DI BALIK', 'INI', 'ORANG DI BALIK INI']
+    const t1 = morphText1Ref.current
+    const t2 = morphText2Ref.current
+    const section = sectionRef.current
+    if (!t1 || !t2 || !section) return
+
+    let textIndex = 0
+    const morphTime = 0.75
+    const cooldownTime = 0.45
+    let morph = 0
+    let cooldown = 0
+    let lastTime = performance.now()
+    let isStarted = false
+    let isFinished = false
+    let hasTriggeredAutoScroll = false
+    let delayTimer = null
+    let autoScrollTimer = null
+    let rafId = null
+
+    // clean initial state
+    t1.textContent = ''
+    t2.textContent = ''
+    t1.style.filter = 'none'
+    t1.style.opacity = '0%'
+    t2.style.filter = 'none'
+    t2.style.opacity = '0%'
+
+    function onMorphComplete() {
+      if (hasTriggeredAutoScroll) return
+      hasTriggeredAutoScroll = true
+
+      autoScrollTimer = setTimeout(() => {
+        const scrollable = section.offsetHeight - window.innerHeight
+        if (scrollable <= 0) return
+        const sectionTop = section.getBoundingClientRect().top + window.scrollY
+        const targetScroll = sectionTop + scrollable * 0.42
+
+        if (window.scrollY < sectionTop + scrollable * 0.25) {
+          window.scrollTo({ top: targetScroll, behavior: 'smooth' })
+        }
+      }, 700)
+    }
+
+    function setMorphStyles(fraction) {
+      fraction = Math.max(0.0001, Math.min(1, fraction))
+      const inv = 1 - fraction
+      t2.style.filter = `blur(${Math.min(8 / fraction - 8, 100)}px)`
+      t2.style.opacity = `${Math.pow(fraction, 0.4) * 100}%`
+      t1.style.filter = `blur(${Math.min(8 / Math.max(0.0001, inv) - 8, 100)}px)`
+      t1.style.opacity = `${Math.pow(inv, 0.4) * 100}%`
+    }
+
+    function doMorph() {
+      morph -= cooldown
+      cooldown = 0
+      let fraction = morph / morphTime
+      if (fraction > 1) fraction = 1
+
+      setMorphStyles(fraction)
+
+      if (fraction === 1) {
+        textIndex++
+        morph = 0
+        t1.textContent = texts[textIndex] || ''
+        t1.style.filter = 'none'
+        t1.style.opacity = '100%'
+        t2.textContent = ''
+        t2.style.filter = 'none'
+        t2.style.opacity = '0%'
+
+        if (textIndex >= texts.length - 1) {
+          isFinished = true
+          onMorphComplete()
+        } else if (textIndex === 1) {
+          cooldown = 0.6
         } else {
-          // All words shown, wait a moment then unlock scrolling
-          wordTimer = setTimeout(() => {
-            setIntroCompleted(true)
-          }, 600)
+          cooldown = cooldownTime
         }
       }
     }
 
-    const startDelay = setTimeout(() => {
-      animateNextWord(1)
-    }, 400)
+    function doCooldown() {
+      morph = 0
+      t1.textContent = texts[textIndex] || ''
+      t1.style.filter = 'none'
+      t1.style.opacity = '100%'
+      t2.textContent = ''
+      t2.style.filter = 'none'
+      t2.style.opacity = '0%'
+    }
+
+    function animate(now) {
+      if (isFinished || !isStarted) return
+      rafId = requestAnimationFrame(animate)
+
+      const dt = Math.min((now - lastTime) / 1000, 0.1)
+      lastTime = now
+      cooldown -= dt
+
+      if (cooldown <= 0) {
+        if (t2.textContent === '' && textIndex < texts.length - 1) {
+          t2.textContent = texts[textIndex + 1]
+        }
+        doMorph()
+      } else {
+        doCooldown()
+      }
+    }
+
+    function startSequence() {
+      if (isStarted) return
+      isStarted = true
+      t1.textContent = ''
+      t2.textContent = ''
+      t1.style.opacity = '0%'
+      t2.style.opacity = '0%'
+
+      delayTimer = setTimeout(() => {
+        textIndex = 0
+        t1.textContent = ''
+        t1.style.opacity = '0%'
+        t2.textContent = texts[1]
+        t2.style.opacity = '0%'
+        lastTime = performance.now()
+        cooldown = 0
+        rafId = requestAnimationFrame(animate)
+      }, 500)
+    }
+
+    function checkTrigger() {
+      const rect = section.getBoundingClientRect()
+      if (rect.top <= window.innerHeight * 0.45 && rect.bottom >= window.innerHeight * 0.2) {
+        if (!isStarted) startSequence()
+      } else if (rect.top > window.innerHeight * 0.7 && isFinished) {
+        clearTimeout(delayTimer)
+        clearTimeout(autoScrollTimer)
+        if (rafId) cancelAnimationFrame(rafId)
+        isStarted = false
+        isFinished = false
+        hasTriggeredAutoScroll = false
+        textIndex = 0
+        morph = 0
+        cooldown = 0.6
+        t1.textContent = ''
+        t2.textContent = ''
+        t1.style.filter = 'none'
+        t1.style.opacity = '0%'
+        t2.style.filter = 'none'
+        t2.style.opacity = '0%'
+      }
+    }
+
+    window.addEventListener('scroll', checkTrigger, { passive: true })
+    window.addEventListener('resize', checkTrigger)
+    checkTrigger()
 
     return () => {
-      clearTimeout(startDelay)
-      clearTimeout(wordTimer)
+      window.removeEventListener('scroll', checkTrigger)
+      window.removeEventListener('resize', checkTrigger)
+      clearTimeout(delayTimer)
+      clearTimeout(autoScrollTimer)
+      if (rafId) cancelAnimationFrame(rafId)
     }
   }, [])
 
-  // Skip animation for accessibility or impatient users
-  const handleSkipIntro = () => {
-    setVisibleWordsCount(MOVIE_WORDS.length)
-    setIntroCompleted(true)
-  }
+  // ── 2. Scroll-driven Card Stacking ──
+  useEffect(() => {
+    const section = sectionRef.current
+    const stageIntro = stageIntroRef.current
+    const slideLutfi = slideLutfiRef.current
+    const slideDimas = slideDimasRef.current
+    if (!section || !slideLutfi || !slideDimas) return
 
-  // Slide navigation with lock check
-  const goToSlide = (index) => {
-    if (!introCompleted && index > 0) return
-    if (index >= 0 && index <= 2) {
-      setCurrentSlide(index)
-    }
-  }
+    function updateSlides() {
+      const rect = section.getBoundingClientRect()
+      const scrollable = section.offsetHeight - window.innerHeight
+      if (scrollable <= 0) return
+      const progress = Math.min(Math.max(-rect.top / scrollable, 0), 1)
 
-  const nextSlide = () => {
-    if (!introCompleted) return
-    if (currentSlide < 2) {
-      setCurrentSlide((prev) => prev + 1)
-    }
-  }
-
-  const prevSlide = () => {
-    if (currentSlide > 0) {
-      setCurrentSlide((prev) => prev - 1)
-    }
-  }
-
-  // Wheel handling inside slide viewport
-  const handleWheel = (e) => {
-    if (!introCompleted) return
-    if (isScrollingRef.current) return
-
-    if (e.deltaY > 30) {
-      if (currentSlide < 2) {
-        e.preventDefault()
-        isScrollingRef.current = true
-        setCurrentSlide((prev) => prev + 1)
-        setTimeout(() => {
-          isScrollingRef.current = false
-        }, 650)
+      // Stage Intro fade out
+      if (stageIntro) {
+        if (progress < 0.12) {
+          stageIntro.style.transform = 'translate3d(0,0,0) scale(1)'
+          stageIntro.style.opacity = '1'
+          stageIntro.style.pointerEvents = 'auto'
+        } else if (progress < 0.28) {
+          const p = (progress - 0.12) / 0.16
+          const e = easeInOutCubic(p)
+          stageIntro.style.transform = `translate3d(0,${(-12 * e).toFixed(2)}%,0) scale(${(1 - 0.06 * e).toFixed(3)})`
+          stageIntro.style.opacity = `${(1 - e).toFixed(3)}`
+          stageIntro.style.pointerEvents = 'none'
+        } else {
+          stageIntro.style.opacity = '0'
+          stageIntro.style.pointerEvents = 'none'
+        }
       }
-      // If at last slide (2), allow default wheel scroll to proceed to next section
-    } else if (e.deltaY < -30) {
-      if (currentSlide > 0) {
-        e.preventDefault()
-        isScrollingRef.current = true
-        setCurrentSlide((prev) => prev - 1)
-        setTimeout(() => {
-          isScrollingRef.current = false
-        }, 650)
+
+      // Slide Lutfi: enter -> pin -> recede
+      if (progress < 0.16) {
+        slideLutfi.style.transform = 'translate3d(0,100%,0) scale(0.96)'
+        slideLutfi.style.opacity = '0'
+        slideLutfi.style.filter = 'none'
+        slideLutfi.style.pointerEvents = 'none'
+      } else if (progress < 0.38) {
+        const p = (progress - 0.16) / 0.22
+        const e = easeOutCubic(p)
+        slideLutfi.style.transform = `translate3d(0,${((1 - e) * 100).toFixed(2)}%,0) scale(${(0.96 + 0.04 * e).toFixed(3)})`
+        slideLutfi.style.opacity = `${Math.min(1, 0.2 + 0.8 * e).toFixed(3)}`
+        slideLutfi.style.filter = 'none'
+        slideLutfi.style.pointerEvents = 'auto'
+      } else if (progress < 0.58) {
+        slideLutfi.style.transform = 'translate3d(0,0%,0) scale(1)'
+        slideLutfi.style.opacity = '1'
+        slideLutfi.style.filter = 'none'
+        slideLutfi.style.pointerEvents = 'auto'
+      } else if (progress < 0.8) {
+        const p = (progress - 0.58) / 0.22
+        const e = easeInOutCubic(p)
+        slideLutfi.style.transform = `translate3d(0,${(-10 * e).toFixed(2)}%,0) scale(${(1 - 0.08 * e).toFixed(3)})`
+        slideLutfi.style.opacity = `${(1 - 0.75 * e).toFixed(3)}`
+        slideLutfi.style.filter = `brightness(${(1 - 0.6 * e).toFixed(2)})`
+        slideLutfi.style.pointerEvents = 'none'
+      } else {
+        slideLutfi.style.transform = 'translate3d(0,-10%,0) scale(0.92)'
+        slideLutfi.style.opacity = '0.25'
+        slideLutfi.style.filter = 'brightness(0.4)'
+        slideLutfi.style.pointerEvents = 'none'
+      }
+
+      // Slide Dimas: enter -> pin
+      if (progress < 0.58) {
+        slideDimas.style.transform = 'translate3d(0,100%,0) scale(0.96)'
+        slideDimas.style.opacity = '0'
+        slideDimas.style.pointerEvents = 'none'
+      } else if (progress < 0.8) {
+        const p = (progress - 0.58) / 0.22
+        const e = easeOutCubic(p)
+        slideDimas.style.transform = `translate3d(0,${((1 - e) * 100).toFixed(2)}%,0) scale(${(0.96 + 0.04 * e).toFixed(3)})`
+        slideDimas.style.opacity = `${Math.min(1, 0.2 + 0.8 * e).toFixed(3)}`
+        slideDimas.style.pointerEvents = 'auto'
+      } else {
+        slideDimas.style.transform = 'translate3d(0,0%,0) scale(1)'
+        slideDimas.style.opacity = '1'
+        slideDimas.style.pointerEvents = 'auto'
       }
     }
-  }
 
-  const dimas = members.find((m) => m.name.toLowerCase() === 'dimas') || members[0]
-  const lutfi = members.find((m) => m.name.toLowerCase() === 'lutfi') || members[1]
+    window.addEventListener('scroll', updateSlides, { passive: true })
+    window.addEventListener('resize', updateSlides)
+    updateSlides()
+
+    return () => {
+      window.removeEventListener('scroll', updateSlides)
+      window.removeEventListener('resize', updateSlides)
+    }
+  }, [])
 
   return (
     <section
-      className="about-slider-section section-pad"
       id="about"
-      ref={slideContainerRef}
-      onWheel={handleWheel}
-      aria-label="About section — People Behind Duo"
+      ref={sectionRef}
+      style={{ height: '320vh', position: 'relative', backgroundColor: '#000000', color: '#fcf9ea' }}
+      aria-label="About — Tim Kami"
     >
-      <div className="wrap">
-        {/* Section Header */}
-        <div className="about-slider-top">
-          <div className="eyebrow">
-            <span>01 / ABOUT THE CREATORS</span>
-            <span className="eyebrow-dot" />
-          </div>
-          <div className="about-slide-pagination">
-            <span className="slide-counter">
-              0{currentSlide + 1} <i>/</i> 03
-            </span>
-            <div className="slide-pills" role="tablist" aria-label="About slides">
-              <button
-                type="button"
-                className={`slide-pill ${currentSlide === 0 ? 'active' : ''}`}
-                onClick={() => goToSlide(0)}
-                aria-label="Slide 1: Intro"
-                role="tab"
-                aria-selected={currentSlide === 0}
-              >
-                01 INTRO
-              </button>
-              <button
-                type="button"
-                className={`slide-pill ${currentSlide === 1 ? 'active' : ''} ${!introCompleted ? 'locked' : ''}`}
-                onClick={() => goToSlide(1)}
-                disabled={!introCompleted}
-                aria-label="Slide 2: Dimas"
-                role="tab"
-                aria-selected={currentSlide === 1}
-                title={!introCompleted ? 'Complete intro animation to unlock' : 'About Dimas'}
-              >
-                02 DIMAS {!introCompleted && '🔒'}
-              </button>
-              <button
-                type="button"
-                className={`slide-pill ${currentSlide === 2 ? 'active' : ''} ${!introCompleted ? 'locked' : ''}`}
-                onClick={() => goToSlide(2)}
-                disabled={!introCompleted}
-                aria-label="Slide 3: Lutfi"
-                role="tab"
-                aria-selected={currentSlide === 2}
-                title={!introCompleted ? 'Complete intro animation to unlock' : 'About Lutfi'}
-              >
-                03 LUTFI {!introCompleted && '🔒'}
-              </button>
-            </div>
+      {/* SVG filter for morphing text blend */}
+      <svg style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden', pointerEvents: 'none' }} aria-hidden="true">
+        <defs>
+          <filter id="threshold">
+            <feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 255 -140" />
+          </filter>
+        </defs>
+      </svg>
+
+      {/* Sticky viewport */}
+      <div className="about-sticky-stage" style={{ position: 'sticky', top: 0, height: '100vh', width: '100%', overflow: 'hidden', backgroundColor: '#000000' }}>
+
+        {/* LightRays Background (khusus About) */}
+        <div style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 0, pointerEvents: 'none' }}>
+          <LightRays
+            raysOrigin="top-center"
+            raysColor="#ffffff"
+            raysSpeed={1.5}
+            lightSpread={0.8}
+            rayLength={1.2}
+            followMouse={true}
+            mouseInfluence={0.1}
+            noiseAmount={0.1}
+            distortion={0.05}
+            className="custom-rays"
+          />
+        </div>
+
+        {/* STAGE 1: Morphing Text */}
+        <div
+          id="stage-intro"
+          ref={stageIntroRef}
+        >
+          <div className="morph-text-container" style={{ filter: 'url(#threshold) blur(0.6px)' }}>
+            <span id="morph-text1" ref={morphText1Ref} style={{ position: 'absolute', inset: '0 0 auto', margin: 'auto', display: 'inline-block', width: '100%' }} />
+            <span id="morph-text2" ref={morphText2Ref} style={{ position: 'absolute', inset: '0 0 auto', margin: 'auto', display: 'inline-block', width: '100%' }} />
           </div>
         </div>
 
-        {/* Slide Stage */}
-        <div className="about-slide-stage">
-          {/* SLIDE 0: CINEMATIC WORD-BY-WORD TITLE */}
-          <div className={`about-slide slide-intro ${currentSlide === 0 ? 'slide-active' : 'slide-hidden'}`}>
-            <div className="cinematic-box">
-              <span className="cinematic-kicker">CINEMATIC INTRODUCTION</span>
+        {/* STAGE 2: Slide Lutfi */}
+        <div
+          id="slide-lutfi"
+          ref={slideLutfiRef}
+          style={{ zIndex: 20, transform: 'translate3d(0,100%,0) scale(0.96)', opacity: 0 }}
+        >
+          <div className="about-rail-top">
+            <span className="about-rail-title">Tim Kami</span>
+          </div>
 
-              <h2 className="cinematic-title" aria-label="Orang di balik ini">
-                {MOVIE_WORDS.map((word, idx) => {
-                  const isVisible = idx < visibleWordsCount
-                  return (
-                    <span
-                      key={word}
-                      className={`movie-word ${isVisible ? 'word-show' : 'word-hide'}`}
-                      style={{ animationDelay: `${idx * 0.1}s` }}
-                    >
-                      {word}
-                      {idx < MOVIE_WORDS.length - 1 && <span className="word-space">&nbsp;</span>}
-                    </span>
-                  )
-                })}
-              </h2>
+          <div className="about-editorial-layout">
+            <div className="about-lanyard-stage">
+              <Lanyard
+                position={[0, 0, 13]}
+                gravity={[0, -40, 0]}
+                frontImage="/lutfi.jpeg"
+                backImage="/lutfi.jpeg"
+                imageFit="cover"
+              />
+            </div>
 
-              <p className="cinematic-sub">
-                Two minds shaping thoughtful digital experiences through architectural design and reactive code.
+            <div className="about-details-col">
+              <div className="about-details-header">
+                <div className="about-telemetry-meta font-mono">
+                  <div className="about-role-pill">
+                    <span className="role-dot" />
+                    <span>FRONTEND LEAD</span>
+                  </div>
+                  <span className="about-id-tag">NIM 2604140069</span>
+                  <span className="about-week-tag">TUGAS WEEK 2</span>
+                </div>
+
+                <h3 className="about-person-name">LUTFI</h3>
+                <p className="about-person-sub">Fondasi Teknis, Semantik HTML5, & Tailwind CLI</p>
+              </div>
+
+              <p className="about-person-desc">
+                Menginisialisasi seluruh arsitektur Tailwind CLI mandiri, merancang kerangka
+                HTML5 yang semantik dan ramah aksesibilitas, serta membangun navigasi
+                responsif dan komponen interaktif.
               </p>
 
-              {/* Status and Action Cue */}
-              <div className="cinematic-footer">
-                {!introCompleted ? (
-                  <div className="cinematic-locked-cue">
-                    <span className="cue-dot-pulsing" aria-hidden="true" />
-                    <span>PLAYING SEQUENCE... (SCROLL LOCKED)</span>
-                    <button type="button" className="cue-skip-btn" onClick={handleSkipIntro}>
-                      SKIP [ESC]
-                    </button>
-                  </div>
-                ) : (
-                  <div className="cinematic-unlocked-cue">
-                    <button
-                      type="button"
-                      className="cinematic-proceed-btn"
-                      onClick={() => goToSlide(1)}
-                    >
-                      <span>MEET THE CREATORS</span>
-                      <span className="cue-arrow">↓</span>
-                    </button>
-                    <span className="unlocked-hint">SCROLL DOWN OR CLICK TO PROCEED</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* SLIDE 1: ABOUT DIMAS */}
-          <div className={`about-slide slide-member ${currentSlide === 1 ? 'slide-active' : 'slide-hidden'}`}>
-            <div className="member-grid">
-              <div className="member-meta-col">
-                <span className="member-num">01 / CREATIVE DUO</span>
-                <h3 className="member-name">{dimas.name}</h3>
-                <span className="member-nim">NIM: {dimas.nim}</span>
-                <p className="member-role">{dimas.role}</p>
-
-                <p className="member-bio">{dimas.bio}</p>
-
-                <div className="member-tags">
-                  {dimas.responsibilities.map((item) => (
-                    <span key={item} className="member-tag">
-                      {item}
-                    </span>
-                  ))}
+              <div className="about-spec-grid">
+                <div className="about-spec-card">
+                  <div className="about-spec-kicker font-mono">01 // FOKUS MODUL</div>
+                  <div className="about-spec-val">Projects, Products & Modal</div>
                 </div>
-
-                <div className="member-actions">
-                  <Link to="/skills" className="member-link-btn">
-                    VIEW SKILLS ↗
-                  </Link>
-                  <button
-                    type="button"
-                    className="member-3d-btn"
-                    onClick={() => setShow3DModal(true)}
-                  >
-                    INSPECT 3D SCULPTURE ✳
-                  </button>
+                <div className="about-spec-card">
+                  <div className="about-spec-kicker font-mono">02 // STANDAR TEKNIS</div>
+                  <div className="about-spec-val">Zero-Bloat, Purged Production</div>
                 </div>
               </div>
 
-              <div className="member-visual-col">
-                <div className="member-portrait-wrap">
-                  <img
-                    src={dimas.image}
-                    alt="Dimas portrait"
-                    loading="lazy"
-                  />
-                  <div className="member-portrait-badge">
-                    <span>DIMAS · VISUAL & LAYOUT</span>
-                    <small>STUDENT & DEVELOPER</small>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* SLIDE 2: ABOUT LUTFI */}
-          <div className={`about-slide slide-member ${currentSlide === 2 ? 'slide-active' : 'slide-hidden'}`}>
-            <div className="member-grid">
-              <div className="member-meta-col">
-                <span className="member-num">02 / CREATIVE DUO</span>
-                <h3 className="member-name">{lutfi.name}</h3>
-                <span className="member-nim">NIM: {lutfi.nim}</span>
-                <p className="member-role">{lutfi.role}</p>
-
-                <p className="member-bio">{lutfi.bio}</p>
-
-                <div className="member-tags">
-                  {lutfi.responsibilities.map((item) => (
-                    <span key={item} className="member-tag">
-                      {item}
-                    </span>
-                  ))}
-                </div>
-
-                <div className="member-actions">
-                  <Link to="/projects" className="member-link-btn">
-                    VIEW PROJECTS ↗
-                  </Link>
-                  <button
-                    type="button"
-                    className="member-3d-btn"
-                    onClick={() => setShow3DModal(true)}
-                  >
-                    INSPECT 3D SCULPTURE ✳
-                  </button>
-                </div>
-              </div>
-
-              <div className="member-visual-col">
-                <div className="member-portrait-wrap">
-                  <img
-                    src={lutfi.image}
-                    alt="Lutfi portrait"
-                    loading="lazy"
-                  />
-                  <div className="member-portrait-badge">
-                    <span>LUTFI · INTERACTION & COMPONENTS</span>
-                    <small>STUDENT & DEVELOPER</small>
-                  </div>
-                </div>
+              <div className="about-pills-wrap">
+                <span className="about-skill-pill font-mono">[01] HTML5 Semantik</span>
+                <span className="about-skill-pill font-mono">[02] React 19</span>
+                <span className="about-skill-pill font-mono">[03] Tailwind CLI</span>
+                <span className="about-skill-pill font-mono">[04] Git Workflow</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Slide Controls & Bottom Nav */}
-        <div className="about-slider-controls">
-          <div className="controls-nav-btns">
-            <button
-              type="button"
-              className="slide-arrow-btn"
-              onClick={prevSlide}
-              disabled={currentSlide === 0}
-              aria-label="Previous slide"
-            >
-              ← PREV
-            </button>
-            <button
-              type="button"
-              className="slide-arrow-btn"
-              onClick={nextSlide}
-              disabled={currentSlide === 2 || (!introCompleted && currentSlide === 0)}
-              aria-label="Next slide"
-            >
-              NEXT →
-            </button>
+        {/* STAGE 3: Slide Dimas */}
+        <div
+          id="slide-dimas"
+          ref={slideDimasRef}
+          style={{ zIndex: 30, transform: 'translate3d(0,100%,0) scale(0.96)', opacity: 0 }}
+        >
+          <div className="about-rail-top">
+            <span className="about-rail-title">Tim Kami</span>
           </div>
 
-          <div className="controls-hint">
-            <span>
-              {currentSlide === 0 && !introCompleted && 'LOCK: WAITING FOR MOVIE INTRO...'}
-              {currentSlide === 0 && introCompleted && 'UNLOCKED: SCROLL OR USE ARROWS'}
-              {currentSlide === 1 && 'SLIDE 2 OF 3 · DIMAS (VISUAL)'}
-              {currentSlide === 2 && 'SLIDE 3 OF 3 · LUTFI (INTERACTION)'}
-            </span>
-          </div>
-        </div>
+          <div className="about-editorial-layout">
+            <div className="about-lanyard-stage">
+              <Lanyard
+                position={[0, 0, 13]}
+                gravity={[0, -40, 0]}
+                frontImage="/dimas.jpeg"
+                backImage="/dimas.jpeg"
+                imageFit="cover"
+              />
+            </div>
 
-        {/* 3D Sculpture Section Embed or Modal */}
-        {show3DModal && (
-          <div className="about-3d-drawer" role="dialog" aria-modal="true" aria-label="3D Duo Core Sculpture">
-            <div className="about-3d-drawer-content">
-              <button
-                type="button"
-                className="about-3d-drawer-close"
-                onClick={() => setShow3DModal(false)}
-                aria-label="Close 3D sculpture viewer"
-              >
-                ✕
-              </button>
-              <About3D darkMode={darkMode} />
+            <div className="about-details-col">
+              <div className="about-details-header">
+                <div className="about-telemetry-meta font-mono">
+                  <div className="about-role-pill">
+                    <span className="role-dot" />
+                    <span>CONTENT & UI SPECIALIST</span>
+                  </div>
+                  <span className="about-id-tag">NIM 2605090004</span>
+                  <span className="about-week-tag">TUGAS WEEK 2</span>
+                </div>
+
+                <h3 className="about-person-name">DIMAS</h3>
+                <p className="about-person-sub">Konten Orisinal, Layanan, & Aksesibilitas WCAG</p>
+              </div>
+
+              <p className="about-person-desc">
+                Merumuskan naskah orisinal yang padat dan bebas template AI,
+                mengonseptualisasikan kartu keahlian yang informatif, menata struktur visual
+                lengkap dengan kanal jejaring, serta menjamin kontras lolos standar WCAG.
+              </p>
+
+              <div className="about-spec-grid">
+                <div className="about-spec-card">
+                  <div className="about-spec-kicker font-mono">01 // FOKUS MODUL</div>
+                  <div className="about-spec-val">Visual, 3D Core & Layout</div>
+                </div>
+                <div className="about-spec-card">
+                  <div className="about-spec-kicker font-mono">02 // STANDAR DESAIN</div>
+                  <div className="about-spec-val">WCAG AAA, Editorial Feel</div>
+                </div>
+              </div>
+
+              <div className="about-pills-wrap">
+                <span className="about-skill-pill font-mono">[01] Visual Architecture</span>
+                <span className="about-skill-pill font-mono">[02] Three.js WebGL</span>
+                <span className="about-skill-pill font-mono">[03] Aksesibilitas (WCAG)</span>
+                <span className="about-skill-pill font-mono">[04] Design Tokens</span>
+              </div>
             </div>
           </div>
-        )}
+        </div>
       </div>
+
+      {/* 3D Modal */}
+      {show3DModal && (
+        <div className="about-3d-drawer" role="dialog" aria-modal="true" aria-label="3D Duo Core Sculpture">
+          <div className="about-3d-drawer-content">
+            <button type="button" className="about-3d-drawer-close" onClick={() => setShow3DModal(false)} aria-label="Close 3D sculpture viewer">✕</button>
+            <About3D darkMode={darkMode ?? true} />
+          </div>
+        </div>
+      )}
     </section>
   )
 }

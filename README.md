@@ -2,20 +2,20 @@
 
 Website portfolio modern, editorial, dan interaktif yang dibangun oleh dua developer (**Lutfi** & **Dimas**). Mengadopsi prinsip desain terinspirasi standar **Awwwards**: *Visual First, Generous Whitespace, Strong Typography, dan Smooth Motion*.
 
-Proyek ini merupakan implementasi Single Page Application (SPA) berbasis **React 19**, **Vite 8**, **React Router DOM 7**, dan visualisasi 3D WebGL interaktif menggunakan **Three.js**.
+Proyek ini merupakan implementasi Single Page Application (SPA) berbasis **React 19**, **Vite 8**, **React Router DOM 7**, visualisasi 3D WebGL interaktif menggunakan **Three.js** & **React Three Fiber**, simulasi fisika lanyard menggunakan **Rapier**, serta transisi pixel kustom **PixelSwap**.
 
 ---
 
 ## Daftar Isi
 
 - [Tentang Proyek](#tentang-proyek)
-- [Filosofi & Konsep Desain](#filosofi--konsep-desain)
 - [Anggota Tim & Pembagian Tugas](#anggota-tim--pembagian-tugas)
+- [Dokumentasi Library & Panduan Instalasi (Prompt CLI)](#dokumentasi-library--panduan-instalasi-prompt-cli)
 - [Fitur Utama & Alur Pengalaman Pengguna](#fitur-utama--alur-pengalaman-pengguna)
-- [Tech Stack & Dependensi](#tech-stack--dependensi)
 - [Prasyarat Sistem](#prasyarat-sistem)
-- [Panduan Instalasi & Menjalankan Proyek](#panduan-instalasi--menjalankan-proyek)
+- [Panduan Menjalankan Proyek](#panduan-menjalankan-proyek)
 - [Struktur Direktori](#struktur-direktori)
+- [Halaman & Routing](#halaman--routing)
 - [Alur Kerja Git & Konvensi Commit](#alur-kerja-git--konvensi-commit)
 - [Konfigurasi Deployment](#konfigurasi-deployment)
 
@@ -29,20 +29,8 @@ Berbeda dari portfolio konvensional yang padat dengan teks, platform ini memprio
 ```text
 Visual → Whitespace → Typography → Motion Halus → Informasi Singkat
 ```
-Pengunjung disajikan pengalaman interaktif dengan transisi halus, kanvas 3D interaktif, micro-interactions responsif, serta dukungan tema terang (*light*) dan gelap (*dark*).
 
----
-
-## Filosofi & Konsep Desain
-
-1. **Visual First**: Pengunjung memahami identitas dan karya melalui hierarki visual yang jelas tanpa harus membaca paragraf panjang.
-2. **Generous Whitespace**: Setiap bagian diberikan ruang bernapas yang cukup agar fokus mata tetap nyaman dan estetika editorial terasa kuat.
-3. **Editorial Typography**: Menggunakan kontras skala tipografi tajam antara judul besar (*display heading*) dan teks deskriptif yang ringkas.
-4. **Subtle Motion**: Animasi dirancang fungsional dan halus untuk meningkatkan pengalaman interaktif tanpa memperlambat performa.
-5. **Color System**:
-   - **Warm Cream (`#FCF9EA`)**: Warna dasar latar belakang yang ramah di mata.
-   - **Charcoal Black (`#1C1E1F`)**: Struktur layout, pembatas border, dan tipografi utama.
-   - **Deep Forest Teal (`#134E4A`)**: Aksen interaktif, Call to Action (CTA), status badge, dan hover highlight.
+Pengunjung disajikan pengalaman interaktif dengan transisi halus, kanvas 3D interaktif, morphing text sinematik, efek masuk kinetik bola pantul (*bouncing ball*), kartu tugas melayang (*floating task cards*), scroll-driven card stacking, micro-interactions responsif, serta dukungan tema terang (*light*) dan gelap (*dark*).
 
 ---
 
@@ -50,102 +38,168 @@ Pengunjung disajikan pengalaman interaktif dengan transisi halus, kanvas 3D inte
 
 | No | Nama | NIM | Role | Fokus Utama |
 |---|---|---|---|---|
-| 1 | **Lutfi** | 2604140069 | Frontend Developer — Interaction & Components | Projects Catalog, Products Section, Modal Reusable, Contact Form & Validasi, Micro-interactions. |
-| 2 | **Dimas** | 2605090004 | Frontend Developer — Visual & Layout | Responsive Navbar & Menu, Hero Section, About Layout & Three.js Canvas, Skills Matrix, Theme System. |
+| 1 | **Lutfi** | 2604140069 | Frontend Developer — Interaction & Components | Projects Catalog, Products Section, Modal Reusable, Contact Form & Validasi, Footer, Micro-interactions. |
+| 2 | **Dimas** | 2605090004 | Frontend Developer — Visual & Layout | Responsive Navbar & SideNav, Hero Section, About Layout & Three.js Canvas, Skills Matrix, Theme System. |
 
 ### Rincian Tanggung Jawab:
+
 - **Lutfi**:
   - `src/components/ProjectCard.jsx` & `src/pages/ProjectsPage.jsx`
   - `src/components/ProductCard.jsx` & `src/pages/ProductsPage.jsx`
-  - `src/components/Modal.jsx` (Detail dialog interaktif)
-  - `src/components/Contact.jsx` & `src/pages/ContactPage.jsx` (Validasi form & state kirim)
+  - `src/components/Modal.jsx` (Detail dialog interaktif & focus-trap)
+  - `src/components/Contact.jsx` & `src/pages/ContactPage.jsx` (Validasi form & feedback state)
   - `src/components/Footer.jsx`
   - `src/data/projects.js` & `src/data/products.js`
+
 - **Dimas**:
-  - `src/components/Navbar.jsx` (Navigasi desktop, mobile menu drawer, dan indicator)
-  - `src/components/Hero.jsx` (Tipografi hero editorial & dual CTA)
-  - `src/components/About.jsx` & `src/components/About3D.jsx` (Canvas Three.js dengan 3 mode geometri interaktif)
-  - `src/components/Skills.jsx` & `src/pages/SkillsPage.jsx`
-  - `src/components/ThemeToggle.jsx`
-  - `src/data/members.js` & `src/data/skills.js`
+  - `src/components/Navbar.jsx` (Header wrapper)
+  - `src/components/SideNav.jsx` (Navigasi floating kanan dengan animasi slide-in & HyperText scramble)
+  - `src/components/Hero.jsx` (Kinetic ball drop, floating task cards, tipografi editorial, dan integrasi PixelSwap)
+  - `src/components/About.jsx` & `src/components/About3D.jsx` (Morphing text + scroll card stacking + Three.js 3D sculpture viewer)
+  - `src/components/Lanyard.jsx` (Simulasi fisika tali lanyard 3D menggunakan Rapier & MeshLine)
+  - `src/components/LightRays.jsx` (Shader WebGL OGL ray lighting background)
+  - `src/components/Skills.jsx` & `src/pages/SkillsPage.jsx` (Bento grid dengan SpotlightCard & telemetry)
+  - `src/data/skills.js`
+
 - **Kolaborasi Bersama**:
-  - Setup proyek (Vite, React, struktur folder, routing).
+  - Setup proyek (Vite, React 19, struktur folder, routing).
   - `src/layouts/MainLayout.jsx` & `src/App.jsx`.
   - Agregasi halaman beranda (`src/pages/Home.jsx`) dan penanganan `src/pages/NotFound.jsx`.
-  - Pengujian responsif lintas perangkat (320px s/d 1920px), audit aksesibilitas, dan dokumentasi.
+  - Pengujian responsif lintas perangkat (320px s/d 1920px), audit aksesibilitas (WCAG), dan dokumentasi.
+
+---
+
+## Dokumentasi Library & Panduan Instalasi (Prompt CLI)
+
+Berikut adalah seluruh library pihak ketiga yang dipasang dan digunakan di dalam proyek ini beserta perintah CLI (*prompt terminal*) untuk menginstalnya.
+
+### 1. One-Line Prompt Install (Semua Library Sekaligus)
+
+Untuk menginstal seluruh dependensi produksi dalam satu baris perintah:
+
+```bash
+npm install three @react-three/fiber @react-three/drei @react-three/rapier meshline ogl cobe gsap @gsap/react lenis motion react-router-dom clsx tailwind-merge
+```
+
+---
+
+### 2. Instalasi Berdasarkan Kategori & Kegunaan
+
+#### A. 3D WebGL, Physics & Shader Canvas
+Library yang digunakan untuk visualisasi 3D kartu ID badge lanyard berfisika nyata, 3D sculpture viewer, dan shader latar belakang:
+
+```bash
+npm install three @react-three/fiber @react-three/drei @react-three/rapier meshline ogl cobe
+```
+
+* **`three`** (`^0.186.1`): Pustaka inti WebGL 3D untuk merender mesh, geometri, material, dan pencahayaan.
+* **`@react-three/fiber`** (`^9.8.1`): Declarative renderer React untuk Three.js (komponen `<Canvas />`).
+* **`@react-three/drei`** (`^10.7.9`): Kumpulan helper, loader 3D GLTF (`useGLTF`), texture loader, dan lighting environment (`Environment`, `Lightformer`).
+* **`@react-three/rapier`** (`^2.2.0`): Physics engine berbasis Rust WebAssembly untuk simulasi gravitasi, sambungan bola (*spherical joint*), dan ayunan kartu lanyard ID.
+* **`meshline`** (`^3.3.1`): Pembuat geometri tali tebal dan halus (*thick 3D lines*) untuk strap lanyard.
+* **`ogl`** (`^1.0.11`): WebGL library ultra-ringan berkinerja tinggi untuk shader berkas cahaya `LightRays.jsx`.
+* **`cobe`** (`^0.6.5`): Library canvas 3D globe interaktif 60fps.
+
+#### B. Animasi, Motion & Smooth Inertial Scroll
+Library untuk mengontrol alur gerak, transisi fisika, dan scrolling halus:
+
+```bash
+npm install gsap @gsap/react lenis motion
+```
+
+* **`gsap`** (`^3.15.0`) & **`@gsap/react`** (`^2.1.2`): GreenSock Animation Platform untuk orkestrasi timeline dan transisi visual presisi tinggi.
+* **`lenis`** (`^1.3.26`): Library smooth scroll inersia untuk sensasi scroll web bergaya Awwwards, dilengkapi kontrol programatis (`lenis.stop()` dan `lenis.start()`).
+* **`motion`** (`^13.4.6`): Pustaka animasi deklaratif berbasis spring physics dan gesture handling.
+
+#### C. Routing & CSS Utilities
+Library untuk routing halaman SPA dan manajemen utility class CSS:
+
+```bash
+npm install react-router-dom clsx tailwind-merge
+```
+
+* **`react-router-dom`** (`^7.18.4`): Manajemen routing Single Page Application (`BrowserRouter`, `Routes`, `Route`, `Outlet`, `Link`).
+* **`clsx`** (`^2.1.1`): Utility penggabungan conditional class name secara ringkas.
+* **`tailwind-merge`** (`^3.7.0`): Penggabungan class Tailwind secara otomatis tanpa konflik spesifisitas.
+
+#### D. Development Dependencies (Dev Tools & Linter)
+
+```bash
+npm install -D vite @vitejs/plugin-react oxlint @types/react @types/react-dom
+```
+
+* **`vite`** (`^8.3.0`): Build tool dan development server berkecepatan tinggi.
+* **`@vitejs/plugin-react`** (`^6.1.1`): Plugin resmi React untuk Vite menggunakan compiler Oxc.
+* **`oxlint`** (`^1.81.0`): High-performance Rust-based JavaScript/JSX linter.
+* **`@types/react`** (`^19.2.18`) & **`@types/react-dom`** (`^19.2.7`): Definisi tipe untuk integrasi editor.
 
 ---
 
 ## Fitur Utama & Alur Pengalaman Pengguna
 
-Alur pengguna dari awal memasuki website hingga selesai:
+1. **Hero Section & Kinetic Entrance**:
+   - **Layar Awal**: Kanvas bersih dengan latar krem hangat (`var(--paper)`) dan pola kisi-kisi milimeter halus (*graph paper grid*).
+   - **Sidebar Hide & Sync Reveal**: Sidebar kanan (`SideNav`) disembunyikan di awal (`translate-x-[150%] opacity-0`).
+   - **Bouncing Ball**: Bola hijau limau neon (`#D2F831`) jatuh dari atas layar dengan gravitasi nyata, menumbuk lantai tengah, terdeformasi lentur (*squash & stretch*), lalu memantul (*rebound*).
+   - **Simultaneous Content Reveal**: Saat bola selesai memantul (~1050ms), bola menghilang lembut digantikan oleh teks utama tengah dan 7 kartu tugas floating, serta sidebar kanan meluncur masuk secara bersamaan dari kanan ke kiri (`translate-x-0 opacity-100`).
+   - **Tipografi Bersih**: Teks sentral *"We make [digital] feel human."*, di mana kata `digital` berada di dalam badge blok hijau neon lime (`#d4ff00`), `feel` bergaya sans-serif bersih, dan `human.` bergaya serif miring (*italic*).
+   - **7 Kartu Tugas Melayang (*Floating Task Cards*)**: Mengitari teks utama dengan sudut kemiringan dinamis (*negative tilt*) dan animasi mengapung (*idle 3D floating keyframes*):
+     1. `Tubes Java OOP` • `DL - BESOK 08.00` (Ikon `<>`)
+     2. `Analisis Regresi` • `DL - LUSA` (Ikon `📊`)
+     3. `Bot Telegram` • `DL - 36 JAM` (Ikon `🤖`)
+     4. `Tugas Mingguan` • `DL - 23.59` (Ikon `⏱`)
+     5. `Dashboard Next.js` • `DL - 2 HARI` (Ikon `▤`)
+     6. `Laporan Magang` • `DL - JUMAT` (Ikon `📋`)
+     7. `ERD + DFD` • `DL - MALAM INI` (Ikon `🗄`)
+   - **Scroll Pinning & PixelSwap Transition**: Hero section terkunci (`lenis.stop()`). Scroll ke bawah (wheel / touch swipe / panah keyboard) tidak menggeser halaman secara kasar, melainkan memicu efek transisi pixel dissolve **PixelSwap** menuju section `#about`. Setelah transisi selesai, halaman mendarat di `#about` dan scroll kembali normal.
 
-1. **Intro Loader (Preloader)**:
-   - Layar pemuatan awal dengan penghitung angka persentase (0–100%) dan teks transisi editorial berganti secara berkala.
-   - Mendukung skip cepat via keyboard (`Esc`) dan secara otomatis menghormati preferensi aksesibilitas `prefers-reduced-motion`.
-2. **Hero Section**:
-   - Judul editorial dramatis dengan layout grid asimetris.
-   - Tombol Call to Action langsung menuju katalog karya (*View Projects*) dan kontak (*Get in Touch*).
-3. **About Section & 3D WebGL Canvas**:
-   - Pengenalan dua profil pengembang kolaboratif.
-   - Kanvas 3D interaktif yang dapat dirotasi menggunakan drag kursor / inersia mouse, lengkap dengan opsi beralih 3 mode geometri matematis:
-     - *Dual Synergy* (Dua cincin torus berpotongan)
-     - *Geodesic Core* (Icosahedron wireframe)
-     - *Möbius Knot* (Torus knot kompleks)
-4. **Skills Matrix**:
-   - Pemetaan keahlian teknis (Core Frontend, Framework, Styling, 3D WebGL, Design & Tooling) dengan kartu interaktif.
-5. **Selected Projects & Showcase**:
-   - Daftar proyek utama dengan nomor seri, tag teknologi, deskripsi ringkas, dan efek visual saat di-hover.
-6. **Digital Products**:
-   - Bagian khusus untuk publikasi digital dan sumber daya desain yang dikembangkan.
-7. **Interactive Modal Dialog**:
-   - Klik pada kartu proyek atau produk membuka pop-up modal detail tanpa berpindah halaman.
-   - Dilengkapi penutup klik backdrop, tombol close, dan event listener tombol `Escape`.
-8. **Contact Section & Form Validation**:
-   - Formulir pesan dengan validasi lokal langsung (nama, email berformat valid, isi pesan).
-   - Indikator status error dan animasi feedback sukses terkirim.
-9. **Dark Mode / Light Mode Toggle**:
-   - Pergantian tema instan dengan penyesuaian kontras menyeluruh pada warna teks, latar, kartu, dan material 3D Three.js.
-10. **404 Not Found Handling**:
-    - Penanganan rute URL yang salah dengan tombol kembali ke beranda.
+2. **About Section — Morphing Text & Scroll Card Stacking**:
+   - **MagicUI Morphing Text**: Teks *"ORANG DI BALIK INI"* muncul kata per kata dengan efek blur-morph menggunakan SVG filter `feColorMatrix` threshold.
+   - **Scroll-Driven Card Stacking**: Section 320vh dengan sticky stage. Saat pengguna melakukan scroll:
+     - Intro morphing text memudar keluar (*fade out*).
+     - Kartu profil Lutfi naik dari bawah dan terkunci (*pinned*).
+     - Kartu profil Lutfi meredup dan mundur ke belakang, disusul kartu profil Dimas yang naik menumpuk di depannya.
+   - **3D Lanyard ID Badge**: Simulasi kartu identitas fisik 3D berayun mengikuti tarikan kursor dan gravitasi menggunakan Rapier physics.
+   - **Three.js 3D Sculpture Modal**: Penampil patung 3D geometris interaktif dengan 3 pilihan mode (*Dual Synergy*, *Geodesic Core*, *Möbius Knot*).
 
----
+3. **SideNav Floating Navigation**:
+   - Navigasi terapung di sisi kanan layar dengan nomor urut section (`01 BERANDA`, `02 ANGGOTA`, `03 SKILLS`, `04 PROYEK`, `05 PRODUK`, `06 KONTAK`).
+   - Efek hover *HyperText scramble* yang mengacak karakter huruf secara dinamis.
+   - Deteksi posisi viewport otomatis untuk indikator garis aktif dan pembalik warna teks (*color inverter*) saat melintasi background gelap.
+   - Tombol pengalih tema (Dark/Light mode) menggunakan komponen animasi `AnimatedThemeToggler`.
 
-## Tech Stack & Dependensi
+4. **Skills Bento Grid & Telemetry**:
+   - Kartu keahlian berbasis Bento Grid dengan efek `SpotlightCard` (sorotan cahaya mengikuti posisi kursor).
+   - Kartu Three.js dilengkapi kanvas interaktif `InteractiveWave`.
+   - Badge telemetri dengan animasi dekripsi teks `DecryptedText` (*RUNTIME: CHROMIUM / V8*).
+   - Filter domain keahlian (*ALL*, *CORE*, *FRAMEWORK*, *CREATIVE*, *SYSTEM*, *WORKFLOW*).
 
-### Dependensi Utama (Production)
-- **Node.js**: Runtime environment JavaScript (`^22.23.3` / kompatibel `>= 18.0.0`)
-- **React (`^19.2.8`)**: Library UI berbasis komponen
-- **React DOM (`^19.2.8`)**: Renderer React untuk peramban web
-- **React Router DOM (`^7.18.4`)**: Manajemen routing SPA (Single Page Application)
-- **Three.js (`^0.186.1`)**: Library render 3D WebGL interaktif
+5. **Selected Projects & Digital Products**:
+   - Showcase proyek pilihan dan produk digital dengan preview kartu interaktif, nomor seri, dan tag keahlian.
+   - Klik kartu membuka modal dialog detail (*pop-up*) lengkap dengan penutup klik backdrop dan tombol `Escape`.
 
-### Dependensi Pengembangan (Development)
-- **Vite (`^8.3.0`)**: Build tool & local development server kilat
-- **@vitejs/plugin-react (`^6.1.1`)**: Plugin React resmi berbasis compiler Oxc
-- **Oxlint (`^1.81.0`)**: High-performance linter kode JavaScript/JSX
-- **@types/react & @types/react-dom**: Definisi tipe untuk integrasi editor
+6. **Contact Section & Validasi Form**:
+   - Formulir pesan langsung dengan validasi client-side (nama wajib, format email regex valid, isi pesan).
+   - Indikator feedback pesan sukses terkirim dan state loading.
 
 ---
 
 ## Prasyarat Sistem
 
-Sebelum melakukan instalasi, pastikan lingkungan lokal Anda telah terpasang:
+Sebelum menjalankan proyek di komputer lokal:
+
 - **Node.js**: Versi `18.0.0` atau lebih baru (direkomendasikan LTS `20.x` atau `22.x`).
   - Cek versi: `node -v`
-- **npm**: Versi `9.x` atau lebih baru (biasanya terpasang bersama Node.js).
+- **npm**: Versi `9.x` atau lebih baru.
   - Cek versi: `npm -v`
-- **Git**: Untuk proses cloning repository.
-  - Cek versi: `git --v`
+- **Git**: Untuk cloning repository.
+  - Cek versi: `git --version`
 
 ---
 
-## Panduan Instalasi & Menjalankan Proyek
-
-Ikuti langkah-langkah berikut secara berurutan untuk menjalankan proyek di komputer lokal:
+## Panduan Menjalankan Proyek
 
 ### 1. Kloning Repository
-Buka terminal dan jalankan perintah clone:
 ```bash
 git clone https://github.com/dimszyo/Tugas_2_DevX_Kelompok_1.git
 ```
@@ -156,35 +210,33 @@ cd Tugas_2_DevX_Kelompok_1
 ```
 
 ### 3. Instalasi Dependensi
-Jalankan perintah berikut untuk mengunduh semua modul yang terdaftar di `package.json`:
 ```bash
 npm install
 ```
 
-### 4. Menjalankan Development Server
-Mulai server lokal dengan Vite:
+### 4. Menjalankan Server Lokal (Development)
 ```bash
 npm run dev
 ```
-Setelah server aktif, buka peramban dan akses alamat yang tertera di terminal:
+Buka browser dan buka tautan:
 ```text
 http://localhost:5173/
 ```
 
 ### 5. Memeriksa Kualitas Kode (Linting)
-Gunakan Oxlint untuk mengecek kualitas dan potensi error pada sintaks:
+Gunakan Oxlint untuk mengecek kualitas dan potensi error kode (zero-warning):
 ```bash
 npm run lint
 ```
 
-### 6. Membangun Proyek untuk Produksi (Production Build)
-Untuk membuat bundle aset produksi yang telah dioptimasi dan diminifikasi ke dalam folder `dist/`:
+### 6. Membangun Bundle Produksi (Production Build)
+Untuk mengompilasi dan meminifikasi aset proyek ke dalam folder `dist/`:
 ```bash
 npm run build
 ```
 
 ### 7. Meninjau Hasil Build Produksi (Preview)
-Uji coba hasil build lokal sebelum deployment:
+Untuk menguji coba build produksi sebelum di-deploy:
 ```bash
 npm run preview
 ```
@@ -193,80 +245,116 @@ npm run preview
 
 ## Struktur Direktori
 
-Berikut adalah struktur berkas dan direktori utama proyek:
+Seluruh file yang tidak terpakai telah dibersihkan secara tuntas sehingga arsitektur proyek tetap ringkas, modular, dan bersih:
 
 ```text
 Tugas_2_DevX_Kelompok_1/
-├── public/                 # Berkas statis publik
+├── public/                     # Aset statis publik
+│   ├── dimas.jpeg              # Foto profil Dimas
+│   └── lutfi.jpeg              # Foto profil Lutfi
+│
 ├── src/
-│   ├── assets/             # Gambar, ikon, dan aset grafis
-│   ├── components/         # Komponen UI modular
-│   │   ├── About.jsx       # Section profil About
-│   │   ├── About3D.jsx     # Visualisasi 3D Three.js interaktif
-│   │   ├── Contact.jsx     # Section & form kontak
-│   │   ├── Footer.jsx      # Footer & tautan sosial
-│   │   ├── Hero.jsx        # Hero section beranda
-│   │   ├── IntroLoader.jsx # Preloader animasi pembuka
-│   │   ├── Modal.jsx       # Modal detail project/product
-│   │   ├── Navbar.jsx      # Navigasi utama & mobile menu
-│   │   ├── ProductCard.jsx # Kartu katalog produk
-│   │   ├── ProjectCard.jsx # Kartu showcase proyek
-│   │   ├── SectionTitle.jsx# Komponen header section seragam
-│   │   ├── Skills.jsx      # Section daftar keahlian
-│   │   └── ThemeToggle.jsx # Pengalih mode gelap/terang
-│   ├── data/               # Data statis
-│   │   ├── members.js      # Data profil pengembang
-│   │   ├── products.js     # Data katalog produk digital
-│   │   ├── projects.js     # Data showcase proyek
-│   │   └── skills.js       # Data keahlian teknis
+│   ├── assets/                 # Aset gambar & grafis
+│   │
+│   ├── components/             # Komponen UI modular
+│   │   ├── ui/                 # Komponen efek mikro visual
+│   │   │   ├── animated-theme-toggler.jsx # Toggle tema dengan animasi lingkaran
+│   │   │   ├── DecryptedText.jsx          # Efek teks dekripsi hacker/telemetri
+│   │   │   ├── InteractiveWave.jsx        # Gelombang matematika kanvas interaktif
+│   │   │   └── SpotlightCard.jsx          # Kartu bento dengan spotlight cursor
+│   │   ├── About.jsx           # Section About (morphing text + card stacking)
+│   │   ├── About3D.jsx         # Penampil 3D Three.js sculpture viewer
+│   │   ├── card.glb            # Model 3D ID Card untuk Lanyard
+│   │   ├── Contact.jsx         # Section formulir & info kontak
+│   │   ├── Footer.jsx          # Footer & copyright
+│   │   ├── Hero.jsx            # Hero section (bouncing ball, task cards, PixelSwap)
+│   │   ├── Lanyard.css         # Styling kanvas simulasi Lanyard
+│   │   ├── Lanyard.jsx         # Simulasi fisika tali 3D Rapier
+│   │   ├── lanyard.png         # Tekstur pita tali lanyard
+│   │   ├── LightRays.jsx       # Shader berkas cahaya WebGL (OGL)
+│   │   ├── Modal.jsx           # Reusable modal dialog detail
+│   │   ├── Navbar.jsx          # Header navigasi
+│   │   ├── PixelSwap.jsx       # Mesin transisi visual pixel dissolve
+│   │   ├── ProductCard.jsx     # Kartu katalog produk digital
+│   │   ├── ProjectCard.jsx     # Kartu showcase proyek pilihan
+│   │   ├── SideNav.jsx         # Navigasi melayang kanan (HyperText scramble)
+│   │   ├── SkillIcons.jsx      # Koleksi SVG ikon teknologi
+│   │   ├── Skills.jsx          # Bento grid matriks keahlian
+│   │   └── SmoothScroll.jsx    # Pembungkus Lenis smooth scroll
+│   │
+│   ├── data/                   # Data statis terstruktur
+│   │   ├── products.js         # Data katalog produk digital
+│   │   ├── projects.js         # Data showcase proyek
+│   │   └── skills.js           # Data keahlian teknis
+│   │
 │   ├── layouts/
-│   │   └── MainLayout.jsx  # Layout utama pembungkus Navbar, Outlet, Footer, Modal
-│   ├── pages/              # Halaman rute React Router
-│   │   ├── AboutPage.jsx   # Halaman penuh About
-│   │   ├── ContactPage.jsx # Halaman penuh Contact
-│   │   ├── Home.jsx        # Halaman Beranda gabungan
-│   │   ├── NotFound.jsx    # Halaman error 404
-│   │   ├── ProductsPage.jsx# Halaman penuh Products
-│   │   ├── ProjectsPage.jsx# Halaman penuh Projects
-│   │   └── SkillsPage.jsx  # Halaman penuh Skills
-│   ├── App.css             # Styling styling global & modul
-│   ├── App.jsx             # Root router & inisialisasi state
-│   ├── index.css           # Basis CSS & reset font
-│   └── main.jsx            # Entry point ReactDOM
-├── .gitignore              # Konfigurasi file yang diabaikan Git
-├── DESIGN.md               # Pedoman desain visual & token
-├── package.json            # Daftar dependensi & script proyek
-├── PengerjaanKelompok.md   # Catatan pembagian kerja kelompok
-├── PRD.md                  # Product Requirements Document
-├── README.md               # Dokumentasi utama proyek
-├── vercel.json             # Konfigurasi routing rewrite SPA Vercel
-└── vite.config.js          # Konfigurasi bundler Vite
+│   │   └── MainLayout.jsx      # Layout utama (Navbar + Outlet + Footer + Modal)
+│   │
+│   ├── lib/
+│   │   └── utils.js            # Helper cn() (clsx + tailwind-merge)
+│   │
+│   ├── pages/                  # Halaman rute React Router DOM
+│   │   ├── AboutPage.jsx       # Halaman penuh About
+│   │   ├── ContactPage.jsx     # Halaman penuh Contact
+│   │   ├── Home.jsx            # Beranda utama (gabungan section)
+│   │   ├── NotFound.jsx        # Halaman penanganan 404
+│   │   ├── ProductsPage.jsx    # Halaman penuh Products
+│   │   ├── ProjectsPage.jsx    # Halaman penuh Projects
+│   │   └── SkillsPage.jsx      # Halaman penuh Skills
+│   │
+│   ├── App.css                 # Stylesheet utama & custom keyframes
+│   ├── App.jsx                 # Root router & inisialisasi state
+│   ├── index.css               # Reset font & CSS variables dasar
+│   └── main.jsx                # Entry point ReactDOM React 19
+│
+├── components.json             # Konfigurasi shadcn UI
+├── DESIGN.md                   # Pedoman desain visual, token & aturan gaya
+├── jsconfig.json               # Konfigurasi path aliases editor (@/*)
+├── package.json                # Daftar dependensi & npm scripts
+├── package-lock.json           # Lockfile dependensi npm
+├── PengerjaanKelompok.md       # Catatan pembagian kerja kelompok
+├── PRD.md                      # Product Requirements Document
+├── vercel.json                 # Konfigurasi rewrite SPA Vercel
+├── vite.config.js              # Konfigurasi bundler Vite
+└── README.md                   # Dokumentasi utama proyek
 ```
+
+---
+
+## Halaman & Routing
+
+| Rute | Komponen Halaman | Deskripsi |
+|---|---|---|
+| `/` | `Home.jsx` | Landing page beranda utama yang menggabungkan seluruh section |
+| `/about` | `AboutPage.jsx` | Halaman penuh profil anggota tim |
+| `/skills` | `SkillsPage.jsx` | Halaman penuh matriks keahlian teknis |
+| `/projects` | `ProjectsPage.jsx` | Halaman katalog showcase karya terpilih |
+| `/products` | `ProductsPage.jsx` | Halaman katalog produk digital |
+| `/contact` | `ContactPage.jsx` | Halaman formulir & kanal kontak |
+| `*` | `NotFound.jsx` | Halaman 404 jika URL tidak ditemukan |
 
 ---
 
 ## Alur Kerja Git & Konvensi Commit
 
-Proyek ini menggunakan branching strategy terstruktur untuk menjaga stabilitas branch utama:
-
 ### Struktur Branch
-- `main`: Branch utama produksi yang selalu stabil.
-- `feature/dimas`: Branch kerja fitur untuk Dimas (Visual, Layout, Theme, 3D).
-- `feature/lutfi`: Branch kerja fitur untuk Lutfi (Components, Interaction, Modal, Form).
+- `main` — Branch utama produksi yang stabil dan terverifikasi lolos build.
+- `feature/lutfi` — Branch pengembangan fitur untuk Lutfi (Components, Interaction, Modal, Form).
+- `feature/dimas` — Branch pengembangan fitur untuk Dimas (Visual, Layout, Theme, 3D).
 
 ### Format Pesan Commit
-Format commit mengacu pada *Conventional Commits*:
+Format commit mengacu pada aturan *Conventional Commits*:
 - `feat: <deskripsi>` — Penambahan fitur atau komponen baru.
-- `fix: <deskripsi>` — Perbaikan bug atau penyesuaian tata letak.
-- `style: <deskripsi>` — Penyesuaian estetika, spacing, atau tipografi tanpa mengubah logika.
-- `refactor: <deskripsi>` — Restrukturisasi kode tanpa mengubah perilaku fitur.
-- `docs: <deskripsi>` — Pembaruan berkas dokumentasi (`README.md`, `PRD.md`, dll.).
+- `fix: <deskripsi>` — Perbaikan bug atau penyesuaian fungsi.
+- `style: <deskripsi>` — Penyesuaian estetika, spacing, tata letak, atau tipografi.
+- `refactor: <deskripsi>` — Pembersihan atau restrukturisasi kode tanpa mengubah perilaku.
+- `docs: <deskripsi>` — Pembaruan dokumentasi proyek (`README.md`, `DESIGN.md`, dll.).
 
 ---
 
 ## Konfigurasi Deployment
 
-Aplikasi ini siap di-deploy ke platform **Vercel** atau penyedia hosting statis lainnya. Berkas `vercel.json` telah dikonfigurasi untuk menangani rewrite rute client-side SPA agar URL langsung (misal `/projects`, `/about`) tidak menghasilkan error `404 Not Found`:
+Aplikasi siap di-deploy secara otomatis ke platform **Vercel**. Berkas `vercel.json` telah dikonfigurasi untuk menangani rewrite rute client-side SPA agar URL langsung (seperti `/projects`, `/about`, `/contact`) tidak mengalami error `404 Not Found`:
 
 ```json
 {
@@ -284,3 +372,9 @@ Pengaturan Build di Vercel:
 - **Build Command**: `npm run build`
 - **Output Directory**: `dist`
 - **Install Command**: `npm install`
+
+---
+
+## Lisensi
+
+Proyek ini dibuat untuk keperluan tugas akademik mata kuliah DevX Kelompok 1.

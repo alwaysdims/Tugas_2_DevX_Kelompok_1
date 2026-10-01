@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import './App.css'
-import IntroLoader from './components/IntroLoader'
+import SmoothScroll from './components/SmoothScroll'
 import MainLayout from './layouts/MainLayout'
 import Home from './pages/Home'
 import AboutPage from './pages/AboutPage'
@@ -15,19 +15,11 @@ import NotFound from './pages/NotFound'
 export default function App() {
   const [darkMode, setDarkMode] = useState(false)
   const [selectedItem, setSelectedItem] = useState(null)
-  const [isLoaded, setIsLoaded] = useState(false)
-  const [showLoader, setShowLoader] = useState(true)
+  const isLoaded = true
 
   return (
-    <>
-      {showLoader && (
-        <IntroLoader
-          onExitStart={() => setIsLoaded(true)}
-          onComplete={() => setShowLoader(false)}
-        />
-      )}
-
-      <BrowserRouter>
+    <BrowserRouter>
+      <SmoothScroll>
         <Routes>
           <Route
             path="/"
@@ -50,7 +42,7 @@ export default function App() {
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
-      </BrowserRouter>
-    </>
+      </SmoothScroll>
+    </BrowserRouter>
   )
 }
