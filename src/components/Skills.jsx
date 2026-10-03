@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import SpotlightCard from './ui/SpotlightCard';
 import DecryptedText from './ui/DecryptedText';
-import InteractiveWave from './ui/InteractiveWave';
+import PulseWave from './ui/PulseWave';
 import { skills } from '../data/skills';
 import {
   ReactIcon,
@@ -111,8 +111,8 @@ export default function Skills({ className = '' }) {
                   hoveredSkillId === skill.id ? 'is-focused' : ''
                 }`}
               >
-                {/* Optional interactive canvas layer for creative card */}
-                {isWaveCard && <InteractiveWave />}
+                {/* Optional interactive CSS layer for creative card */}
+                {isWaveCard && <PulseWave />}
 
                 <div className="skill-card-inner">
                   {/* Top Bar: Icon + Monospace Meta */}

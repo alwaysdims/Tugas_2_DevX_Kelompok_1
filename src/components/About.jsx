@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import About3D from './About3D'
 import LightRays from './LightRays'
-import Lanyard from './Lanyard'
+import ResponsiveLanyard from './ResponsiveLanyard';
 
 function easeInOutCubic(x) {
   return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2
@@ -337,7 +337,7 @@ export default function About({ darkMode = true, show3DByDefault = false }) {
 
           <div className="about-editorial-layout">
             <div className="about-lanyard-stage">
-              <Lanyard
+              <ResponsiveLanyard
                 position={[0, 0, 13]}
                 gravity={[0, -40, 0]}
                 frontImage="/lutfi.jpeg"
@@ -400,7 +400,7 @@ export default function About({ darkMode = true, show3DByDefault = false }) {
 
           <div className="about-editorial-layout">
             <div className="about-lanyard-stage">
-              <Lanyard
+              <ResponsiveLanyard
                 position={[0, 0, 13]}
                 gravity={[0, -40, 0]}
                 frontImage="/dimas.jpeg"
