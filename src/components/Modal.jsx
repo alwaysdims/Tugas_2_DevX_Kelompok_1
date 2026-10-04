@@ -61,23 +61,27 @@ export default function Modal({ item, onClose }) {
           <h2 id="modal-title">{item.title}</h2>
           <p>{item.description}</p>
 
-          {(item.tags || item.technologies) && (
-            <div className="modal-tags">
-              {(item.tags || item.technologies).map((tag) => (
-                <span key={tag}>{tag}</span>
-              ))}
-            </div>
-          )}
+          {(item.tags || item.technologies || (item.link && item.link !== '#')) && (
+            <div className="modal-foot">
+              {(item.tags || item.technologies) && (
+                <div className="modal-tags">
+                  {(item.tags || item.technologies).map((tag) => (
+                    <span key={tag}>{tag}</span>
+                  ))}
+                </div>
+              )}
 
-          {item.link && item.link !== '#' && (
-            <a
-              href={item.link}
-              target="_blank"
-              rel="noreferrer"
-              className="modal-link-btn"
-            >
-              VISIT PROJECT ↗
-            </a>
+              {item.link && item.link !== '#' && (
+                <a
+                  href={item.link}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="modal-link-btn"
+                >
+                  VISIT PROJECT ↗
+                </a>
+              )}
+            </div>
           )}
         </div>
       </section>

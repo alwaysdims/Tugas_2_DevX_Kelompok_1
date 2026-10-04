@@ -9,20 +9,21 @@ export default function ProjectsPage() {
     <div className="page-view projects-page">
       <div className="wrap page-header">
         <div className="eyebrow">
-          <span>DUO® / ARCHIVE</span>
+          <span>DUO® / PROJECT ARCHIVE</span>
           <span className="eyebrow-dot" />
         </div>
         <h1 className="page-title">
-          Selected work,<br />
-          <em>crafted with intent.</em>
+          Featured<br />
+          <em>Projects.</em>
         </h1>
         <p className="page-lead">
-          A collection of digital platforms, e-commerce concepts, and web applications built with React and modern design systems.
+          A short archive of digital platforms and web experiences — built with
+          React and modern design systems, shown screen by screen.
         </p>
       </div>
 
       <section className="work-archive section-pad wrap">
-        <div className="project-grid">
+        <div className="featured-projects">
           {projects.map((project) => (
             <ProjectCard
               key={project.id || project.number}

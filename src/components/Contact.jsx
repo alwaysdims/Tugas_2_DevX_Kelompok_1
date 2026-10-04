@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { GithubLogo, LinkedinLogo } from './SocialIcons'
 
 function Arrow({ diagonal = false }) {
   return (
@@ -7,6 +8,23 @@ function Arrow({ diagonal = false }) {
     </span>
   )
 }
+
+const SOCIAL_PROFILES = [
+  {
+    name: 'Lutfiar',
+    username_github: 'lutfiar158',
+    username_linkedin: 'lutfiar-maarif',
+    github: 'https://github.com/lutfiar158',
+    linkedin: 'https://www.linkedin.com/in/lutfiar-maarif',
+  },
+  {
+    name: 'Dimas',
+    username_github: 'alwaysdims',
+    username_linkedin: 'orlando-dimas',
+    github: 'https://github.com/alwaysdims',
+    linkedin: 'https://www.linkedin.com/in/orlando-dimas-saputra-089245333/',
+  },
+]
 
 export default function Contact() {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' })
@@ -168,9 +186,30 @@ export default function Contact() {
 
         <div className="contact-bottom">
           <span>GOOD WORK STARTS WITH A CONVERSATION.</span>
-          <a href="https://github.com" target="_blank" rel="noreferrer">
-            GITHUB <Arrow diagonal />
-          </a>
+          <div className="contact-bottom-socials">
+            {SOCIAL_PROFILES.map((profile) => (
+              <div className="contact-bottom-member" key={profile.name}>
+                <a
+                  href={profile.github}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={`${profile.name} on GitHub`}
+                >
+                  <GithubLogo />
+                  {profile.username_github}
+                </a>
+                <a
+                  href={profile.linkedin}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={`${profile.name} on LinkedIn`}
+                >
+                  <LinkedinLogo />
+                  {profile.username_linkedin}
+                </a>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

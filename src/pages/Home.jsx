@@ -44,14 +44,15 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="project-grid">
-            {projects.map((project) => (
-              <ProjectCard
-                key={project.id || project.number}
-                project={project}
-                onSelect={(item) => setSelectedItem(item)}
-              />
-            ))}
+          <div className="featured-projects">
+            {projects
+              .map((project) => (
+                <ProjectCard
+                  key={project.id || project.number}
+                  project={project}
+                  onSelect={(item) => setSelectedItem(item)}
+                />
+              ))}
           </div>
         </div>
       </section>
